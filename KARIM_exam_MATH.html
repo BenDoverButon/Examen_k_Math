@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Exam - 30 Minutes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .timer {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .timer.warning {
+            background: rgba(255,87,87,0.9);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .start-screen {
+            text-align: center;
+        }
+
+        .start-screen h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .start-screen p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102,126,234,0.4);
+        }
+
+        .question-container {
+            display: none;
+        }
+
+        .question {
+            margin-bottom: 30px;
+            padding: 30px;
+            background: #f8f9ff;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .question h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+            line-height: 1.4;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            background: white;
+            border: 2px solid #e1e8ff;
+            border-radius: 10px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .question-counter {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .nav-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(135deg, #4a9a28 0%, #95d9b8 100%);
+        }
+
+        .results-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .results-header {
+            margin-bottom: 30px;
+        }
+
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .score-text {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .results-details {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #e1e8ff;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-question {
+            text-align: left;
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .result-status {
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e1e8ff;
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Examen de mathématique admission test</h1>
+            <div class="timer" id="timer">30:00</div>
+        </div>
+
+        <div class="content">
+            <!-- Start Screen -->
+            <div class="start-screen" id="startScreen">
+                <h2>Bienvenue à la simulation d'examen d'admission du secondaire Mathématiques. Fait par Jad.</h2>
+                <p>Cet examen contient 10 questions à choix multiples<br>
+                Tu as <strong>30 minutes</strong> pour répondre à toutes les questions<br>
+                Clique "Commencer" quand tu es prêt</p>
+                <button class="btn" onclick="startExam()">🚀 Commencer</button>
+            </div>
+
+            <!-- Question Container -->
+            <div class="question-container" id="questionContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div class="question" id="questionDisplay">
+                    <!-- Questions will be loaded here -->
+                </div>
+
+                <div class="navigation">
+                    <span class="question-counter" id="questionCounter">Question 1 de 10</span>
+                    <div>
+                        <button class="nav-btn" id="prevBtn" onclick="previousQuestion()" disabled>← Previous</button>
+                        <button class="nav-btn" id="nextBtn" onclick="nextQuestion()">Next →</button>
+                        <button class="nav-btn submit-btn" id="submitBtn" onclick="submitExam()" style="display: none;">✓ Submit Exam</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div class="results-screen" id="resultsScreen">
+                <div class="results-header">
+                    <div class="score" id="finalScore">0/10</div>
+                    <div class="score-text" id="scoreText">Great job!</div>
+                </div>
+
+                <div class="results-details" id="resultsDetails">
+                    <!-- Results will be loaded here -->
+                </div>
+
+                <button class="btn" onclick="restartExam()">🔄 Réessayer l'examen du début</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Une terrasse verte carrée de 20 mètres de côté a la même aire qu'une terrasse rectangulaire grise de 40 mètres de longueur. Quelle est la largeur de la terrasse rectangulaire grise?",
+                options: ["20 mètres", "5 mètres", "10 mètres", "400 mètres"],
+                correct: 2
+            },
+            {
+                question: "Le périmètre d'un triangle équilatéral est de 30 centimètres. Quelle est la mesure d'un de ses côtés?",
+                options: ["3 cm", "1 dm", "12 cm", "55.1 mm"],
+                correct: 1
+            },
+            {
+                question: "Un avion de la compagnie ABC décolle chaque 120 minutes de l'aéroport de Montréal à partir de minuit. Un avion de la compagnie DEF décolle chaque 35 minutes de l'aéroport de Montréal à partir de 1:10 le matin. Quelle heure décolleront les avions des deux compagnies en même temps?",
+                options: ["14:00", "Minuit", "3:45", "10:35"],
+                correct: 0
+            },
+            {
+                question: "Monsieur NPC a obtenu une moyenne de 30% dans ses trois tests de mathématiques. Sa moyenne pour les deux premiers tests est de 40%. Le résultat de son premier test est de 20%. Quel est le résultat de ses trois tests, en ordre?",
+                options: ["30%, 40%, 20%", "20%, 60%, 10%", "40%, 20%, 30%", "0%, 60%, 30%"],
+                correct: 1
+            },
+            {
+                question: "Choisi la mesure la plus courte",
+                options: ["120 centimètres", "0.02 litres", "12 décimètres", "0.0000012 kilomètres"],
+                correct: 3
+            },
+            {
+                question: "Tu veux acheter un jeu vidéo qui coûte 60$ et tu possèdes une carte-cadeau qui t’accorde un rabais de 25%. Les taxes après le rabais sont de 15%. Quel sera le prix du jeu vidéo une fois le rabais et les taxes appliqués?",
+                options: ["54 $", "51.75 $", "2.25 $", "20.15 $"],
+                correct: 1
+            },
+            {
+                question: "Un triangle rectangle possède un angle aigu de 35 degrés. Trouve la mesure de son troisième angle.",
+                options: ["90", "55", "45", "125"],
+                correct: 1
+            },
+            {
+                question: "Malik a reçu 75$ pour sa fête. Il met 1/3 de côté à la banque. Il dépense ensuite les 4/5 de l’argent qu’il lui reste. Combien d’argent a-t-il encore dans son porte-monnaie?",
+                options: ["35", "15", "10", "25"],
+                correct: 2
+            },
+            {
+                question: "Tu as besoin de ranger des cubes dans une boîte qui mesure 30 cm de longueur, 50 cm de largeur et 10 cm de hauteur. Combien de cubes de 125 cm3 cette boîte peut-elle contenir ?",
+                options: ["12", "1500", "120", "125"],
+                correct: 2
+            },
+            {
+                question: "Réduit la fraction suivante: 156/144.",
+                options: ["78/72", "4/3", "13/12", "26/23"],
+                correct: 2
+            }
+        ];
+
+        let currentQuestion = 0;
+        let userAnswers = new Array(questions.length).fill(-1);
+        let timeLeft = 30 * 60; // 30 minutes in seconds
+        let timerInterval;
+        let examStarted = false;
+
+        function startExam() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('questionContainer').style.display = 'block';
+            document.getElementById('timer').style.display = 'block';
+            examStarted = true;
+            
+            startTimer();
+            displayQuestion();
+            updateProgress();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 300) { // Last 5 minutes
+                    document.getElementById('timer').classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function displayQuestion() {
+            const question = questions[currentQuestion];
+            const questionDisplay = document.getElementById('questionDisplay');
+            
+            let optionsHTML = '';
+            question.options.forEach((option, index) => {
+                const isSelected = userAnswers[currentQuestion] === index ? 'selected' : '';
+                optionsHTML += `
+                    <div class="option ${isSelected}" onclick="selectOption(${index})">
+                        <input type="radio" name="q${currentQuestion}" value="${index}" ${isSelected ? 'checked' : ''}>
+                        ${String.fromCharCode(65 + index)}. ${option}
+                    </div>
+                `;
+            });
+
+            questionDisplay.innerHTML = `
+                <div class="question-number">Question ${currentQuestion + 1} of ${questions.length}</div>
+                <h3>${question.question}</h3>
+                <div class="options">
+                    ${optionsHTML}
+                </div>
+            `;
+
+            questionDisplay.classList.add('fade-in');
+            setTimeout(() => questionDisplay.classList.remove('fade-in'), 500);
+
+            updateNavigation();
+            updateProgress();
+        }
+
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestion] = optionIndex;
+            
+            // Update visual selection
+            const options = document.querySelectorAll('.option');
+            options.forEach((option, index) => {
+                option.classList.toggle('selected', index === optionIndex);
+                const radio = option.querySelector('input[type="radio"]');
+                radio.checked = index === optionIndex;
+            });
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const questionCounter = document.getElementById('questionCounter');
+
+            prevBtn.disabled = currentQuestion === 0;
+            
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-block';
+            } else {
+                nextBtn.style.display = 'inline-block';
+                submitBtn.style.display = 'none';
+            }
+
+            questionCounter.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                displayQuestion();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                displayQuestion();
+            }
+        }
+
+        function submitExam() {
+            clearInterval(timerInterval);
+            
+            document.getElementById('questionContainer').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+            document.getElementById('timer').style.display = 'none';
+            
+            calculateResults();
+        }
+
+        function calculateResults() {
+            let correctAnswers = 0;
+            let resultsHTML = '';
+
+            questions.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === question.correct;
+                if (isCorrect) correctAnswers++;
+
+                const statusClass = isCorrect ? 'correct' : 'incorrect';
+                const statusText = isCorrect ? '✓ Correct' : '✗ Incorrect';
+                
+                const userAnswerText = userAnswer >= 0 ? question.options[userAnswer] : 'No answer';
+                const correctAnswerText = question.options[question.correct];
+
+                resultsHTML += `
+                    <div class="result-item">
+                        <div class="result-question">
+                            <strong>Q${index + 1}:</strong> ${question.question}<br>
+                            <small style="color: #666;">
+                                Your answer: ${userAnswerText}${!isCorrect ? ` | Correct: ${correctAnswerText}` : ''}
+                            </small>
+                        </div>
+                        <div class="result-status ${statusClass}">${statusText}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('finalScore').textContent = `${correctAnswers}/${questions.length}`;
+            document.getElementById('resultsDetails').innerHTML = resultsHTML;
+
+            // Update score text based on performance
+            const percentage = (correctAnswers / questions.length) * 100;
+            let scoreText = '';
+            if (percentage >= 90) scoreText = '🎉 Excellent work!';
+            else if (percentage >= 80) scoreText = '👏 Nice, but keep studying!';
+            else if (percentage >= 70) scoreText = 'Bro.';
+            else if (percentage >= 60) scoreText = '📚 Bro. Study more.';
+            else scoreText = '💪 Practice makes perfect!';
+
+            document.getElementById('scoreText').textContent = scoreText;
+        }
+
+        function restartExam() {
+            currentQuestion = 0;
+            userAnswers = new Array(questions.length).fill(-1);
+            timeLeft = 30 * 60;
+            examStarted = false;
+            
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('timer').classList.remove('warning');
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        // Prevent cheating by disabling right-click and some keyboard shortcuts
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (examStarted && (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'u'))) {
+                e.preventDefault();
+            }
+        });
+
+        // Warn user before leaving the page during exam
+        window.addEventListener('beforeunload', (e) => {
+            if (examStarted && document.getElementById('questionContainer').style.display !== 'none') {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>
